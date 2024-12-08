@@ -29,16 +29,15 @@ async function postPredictHandler(request, h) {
     }
 
     // Prediksi menggunakan model
-    const { confidenceScore, label, suggestion } = await predictClassification(model, image);
+    const { roundedScore, label, suggestion } = await predictClassification(model, image);
     const id = crypto.randomUUID();
     const createdAt = new Date().toISOString();
 
-    label = confidenceScore > 0.5 ? 'Cancer' : 'Non-cancer';
 
     const data = {
       id: id,
       result: label,
-      confidence: confidenceScore,
+      confidence: roundedScore,
       suggestion: suggestion,
       createdAt: createdAt,
     };

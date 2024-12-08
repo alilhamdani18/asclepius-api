@@ -8,31 +8,28 @@ async function predictClassification(model, image) {
     // Prediksi dengan model
     const prediction = model.predict(tensor);
     const score = await prediction.data();
+
+    tensor.dispose(); // Bebaskan memori tensor
+    prediction.dispose(); // Bebaskan memori hasil prediksi
+
+    // Log untuk melihat skor hasil prediksi
+    console.log('Prediction Scores:', scores);
+
     const confidenceScore = Math.max(...score) * 100;
+    const roundedScore = parseFloat(confidenceScore.toFixed(1));
 
-    const classes = ['Cancer', 'Non-cancer'];
-
-    const classResult = tf.argMax(prediction, 1).dataSync()[0];
-    const label = classes[classResult];
-    // const prediction = model.predict(tensor);
-    // const score = await prediction.data();
-
-    // Ambil confidenceScore sebagai probabilitas tertinggi
-    // const confidenceScore = Math.max(...score);
-
-    // Tentukan hasil berdasarkan ambang batas confidence 0.5
-    // const label = confidenceScore > 0.5 ? 'Cancer' : 'Non-cancer';
-
-    // Tentukan saran berdasarkan hasil
-    let suggestion;
-    if (label === 'Cancer') {
-      suggestion = 'Segera periksa ke dokter!';
-    } else {
+    if (roundedScore <= 57.9) {
+      result = 'Non-cancer'; // Jika score <= 57.9
       suggestion = 'Penyakit kanker tidak terdeteksi.';
+    } else {
+      result = 'Cancer'; // Jika score > 57.9
+      suggestion = 'Segera periksa ke dokter!';
     }
 
+    
+
     return {
-      confidenceScore,
+      roundedScore,
       label,
       suggestion,
     };
