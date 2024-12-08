@@ -19,8 +19,8 @@ const COLLECTION_NAME = 'predictions';
  */
 const savePredictionToFirestore = async (predictionData) => {
   try {
-    const collectionRef = firestore.collection(COLLECTION_NAME);
-    const documentRef = collectionRef.doc(predictionData.id);
+    const collectionPrediction = firestore.collection(COLLECTION_NAME);
+    const documentRef = collectionPrediction.doc(predictionData.id);
 
     // Simpan data ke Firestore
     await documentRef.set({
@@ -37,4 +37,18 @@ const savePredictionToFirestore = async (predictionData) => {
   }
 };
 
-module.exports = { savePredictionToFirestore };
+const getHistoriesPredict = async function getPredictionHistoriesFromFirestore() {
+  try {
+    const snapshot = await firestore.collection('predictions').get();
+    const histories = [];
+    snapshot.forEach((doc) => {
+      histories.push({ id: doc.id, ...doc.data() });
+    });
+    return histories;
+  } catch (error) {
+    console.error('Error during fetching prediction histories from Firestore:', error);
+    throw new Error('Failed to fetch prediction histories');
+  }
+};
+
+module.exports = { savePredictionToFirestore, getHistoriesPredict };

@@ -3,38 +3,40 @@ const tf = require('@tensorflow/tfjs-node');
 
 async function predictClassification(model, image) {
   try {
-    const tensor = tf.node.decodeJpeg(image).resizeNearestNeighbor([224, 224]).expandDims().toFloat().div(tf.scalar(255.0)); // Normalisasi ke [0, 1]
+    // Decode and preprocess the image
+    const tensor = tf.node.decodeJpeg(image).resizeNearestNeighbor([224, 224]).expandDims().toFloat().div(tf.scalar(255.0)); // Normalize to [0, 1]
 
-    // Prediksi dengan model
+    // Make prediction with the model
     const prediction = model.predict(tensor);
-    const score = await prediction.data();
+    const scores = await prediction.data();
 
-    tensor.dispose(); // Bebaskan memori tensor
-    prediction.dispose(); // Bebaskan memori hasil prediksi
+    tensor.dispose(); // Free tensor memory
+    prediction.dispose(); // Free prediction memory
 
-    // Log untuk melihat skor hasil prediksi
+    // Log to see prediction scores
     console.log('Prediction Scores:', scores);
 
-    const confidenceScore = Math.max(...score) * 100;
-    const roundedScore = parseFloat(confidenceScore.toFixed(1));
+    const confidenceScore = Math.max(...scores);
+    const roundedScore = parseFloat((confidenceScore * 100).toFixed(1));
+
+    let result;
+    let suggestion;
 
     if (roundedScore <= 57.9) {
-      result = 'Non-cancer'; // Jika score <= 57.9
+      result = 'Non-cancer';
       suggestion = 'Penyakit kanker tidak terdeteksi.';
     } else {
-      result = 'Cancer'; // Jika score > 57.9
+      result = 'Cancer';
       suggestion = 'Segera periksa ke dokter!';
     }
 
-    
-
     return {
       roundedScore,
-      label,
+      result,
       suggestion,
     };
   } catch (error) {
-    throw new InputError(`Terjadi kesalahan input: ${error.message}`);
+    throw `Terjadi kesalahan input: ${error.message}`;
   }
 }
 
